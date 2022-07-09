@@ -30,8 +30,14 @@ const userChoice = async () => {
   return mainMenu.chooseAction;
 };
 
-const viewDepartment = () => {
-  const sql = "SELECT * FROM department";
+const viewAll = (userSelection) => {
+  if (userSelection === "View All Departments") {
+    var sql = "SELECT * FROM department";
+  } else if (userSelection === "View All Roles") {
+    var sql = "SELECT * FROM roles";
+  } else {
+    var sql = "SELECT * FROM employee";
+  }
   db.query(sql, (err, rows) => {
     if (err) {
       console.error(err);
@@ -42,15 +48,149 @@ const viewDepartment = () => {
   });
 };
 
+const addADepartment = async () => {
+  const departmentInfo = await inquirer.prompt({
+    type: "input",
+    name: "departmentName",
+    message: "What is the name of this department?",
+  });
+  const sql = `INSERT INTO department (department_name)
+  VALUES (?)`;
+  const params = [departmentInfo.departmentName];
+  db.query(sql, params, (err, result) => {
+    if (err) {
+      console.error(err);
+    } else {
+      console.log(`${departmentInfo.departmentName} was added to Departments`);
+    }
+  });
+};
+
+const addARole = async () => {
+  const roleInfo = await inquirer.prompt([
+    {
+      type: "input",
+      name: "roleName",
+      message: "What is the name of this role?: ",
+    },
+    {
+      type: "number",
+      name: "roleSalary",
+      message: "What is the salary (in dollars) for this role?: ",
+    },
+    {
+      type: "number",
+      name: "departmentID",
+      // area for refinement
+      message: "What is the ID for the department this role is listed under?: ",
+    },
+  ]);
+  const sql = `INSERT INTO roles (role_title, role_salary, department_id)
+  VALUES (?,?,?)`;
+  const params = [
+    roleInfo.roleName,
+    roleInfo.roleSalary,
+    roleInfo.departmentID,
+  ];
+  db.query(sql, params, (err, result) => {
+    if (err) {
+      console.error(err);
+    } else {
+      console.log(result);
+    }
+  });
+};
+
+const addAnEmployee = async () => {
+  const employeeInfo = await inquirer.prompt([
+    {
+      type: "input",
+      name: "employeeFirstName",
+      message: "What is their first name?: ",
+    },
+    {
+      type: "input",
+      name: "employeeLastName",
+      message: "What is their last name?: ",
+    },
+    {
+      type: "number",
+      name: "roleID",
+      message: "What is the ID of the role of this employee?: ",
+    },
+    {
+      type: "number",
+      name: "managerID",
+      message: "What is the employee ID of the manager of this employee?: ",
+    },
+  ]);
+  const sql = `INSERT INTO employee (first_name, last_name, role_id, manager_id)
+  VALUES(?,?,?,?)`;
+  const params = [
+    employeeInfo.employeeFirstName,
+    employeeInfo.employeeLastName,
+    employeeInfo.roleID,
+    employeeInfo.managerID,
+  ];
+  db.query(sql, params, (err, result) => {
+    if (err) {
+      console.error(err);
+    } else {
+      console.log(result);
+    }
+  });
+};
+
+const updateEmployeeRole = async () => {
+  const employeeToBeUpdated = await inquirer.prompt([
+    {
+      type: "number",
+      name: "employeeID",
+      message:
+        "What is the ID of the employee whose role you would like to update?: ",
+    },
+    {
+      type: "number",
+      name: "newRoleID",
+      message: "What is the ID of the employee's updated role?: ",
+    },
+  ]);
+  const sql = `UPDATE employee SET role_id=? WHERE id=?`;
+  const params = [
+    employeeToBeUpdated.newRoleID,
+    employeeToBeUpdated.employeeID,
+  ];
+  db.query(sql, params, (err, result) => {
+    if (err) {
+      console.error(err);
+    } else {
+      console.log(result);
+    }
+  });
+};
+
 const init = async () => {
-  const exit = false;
+  let exit = false;
   while (exit === false) {
     let initialChoice = await userChoice();
     if (initialChoice === "Quit") {
       exit = true;
+      db.destroy();
       return;
-    } else if (initialChoice === "View All Departments") {
-      viewDepartment();
+    } else if (
+      initialChoice === "View All Departments" ||
+      initialChoice === "View All Roles" ||
+      initialChoice === "View All Employees"
+    ) {
+      viewAll(initialChoice);
+    } else if (initialChoice === "Add a Department") {
+      let departmentAdded = await addADepartment();
+    } else if (initialChoice === "Add a Role") {
+      let roleAdded = await addARole();
+    } else if (initialChoice === "Add an Employee") {
+      let employeeAdded = await addAnEmployee();
+    } else if (initialChoice === "Update an Employee Role") {
+      let employeeUpdated = await updateEmployeeRole();
     }
   }
 };
