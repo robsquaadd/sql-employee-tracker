@@ -5,7 +5,7 @@ const db = mysql2.createConnection(
   {
     host: "localhost",
     user: "root",
-    password: "",
+    password: "UFwrstlr#125",
     database: "employees",
   },
   console.log("Connected to the employee database")
@@ -44,6 +44,7 @@ const viewAll = (userSelection) => {
     } else {
       console.log("\n");
       console.table(rows);
+      console.log("\n" + "Click any key to continue!");
     }
   });
 };
@@ -175,8 +176,7 @@ const init = async () => {
     let initialChoice = await userChoice();
     if (initialChoice === "Quit") {
       exit = true;
-      db.destroy();
-      return;
+      return quit();
     } else if (
       initialChoice === "View All Departments" ||
       initialChoice === "View All Roles" ||
@@ -193,6 +193,11 @@ const init = async () => {
       let employeeUpdated = await updateEmployeeRole();
     }
   }
+};
+
+const quit = () => {
+  console.log("Goodbye");
+  process.exit();
 };
 
 init();
