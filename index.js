@@ -20,10 +20,17 @@ const userChoice = async () => {
       "View All Departments",
       "View All Roles",
       "View All Employees",
+      "#View All Employees By Manager",
+      "#View All Employees By Department",
       "Add a Department",
       "Add a Role",
       "Add an Employee",
-      "Update an Employee Role",
+      "#Delete a Department",
+      "#Delete a Role",
+      "#Delete an Employee",
+      "#Update an Employee Role",
+      "#Update an Employees Manager",
+      "#View Department Budget",
       "Quit",
     ],
   });
@@ -47,6 +54,10 @@ const viewAll = (userSelection) => {
       console.log("\n" + "Click any key to continue!");
     }
   });
+};
+
+const groupEmployees = () => {
+  const sql = `SELECT * FROM employees `;
 };
 
 const addADepartment = async () => {
@@ -170,6 +181,29 @@ const updateEmployeeRole = async () => {
   });
 };
 
+const generateDepartmentBudget = async () => {
+  const answersArray = await createDepartmentList();
+  const departmentSelection = await inquirer.prompt({
+    type: "list",
+    name: "departmentChoice",
+    message: "Which department would you like to get the budget for?",
+    choices: answersArray,
+  });
+  console.log(departmentSelection.departmentChoice);
+};
+
+const createDepartmentList = () => {
+  const sql = `SELECT department_name FROM department`;
+  db.query(sql, (err, rows) => {
+    if (err) {
+      console.error(err);
+    } else {
+      console.log(rows);
+    }
+  }).promise();
+  return [0];
+};
+
 const init = async () => {
   let exit = false;
   while (exit === false) {
@@ -191,6 +225,8 @@ const init = async () => {
       let employeeAdded = await addAnEmployee();
     } else if (initialChoice === "Update an Employee Role") {
       let employeeUpdated = await updateEmployeeRole();
+    } else if (initialChoice === "#View Department Budget") {
+      let departmentBudget = await generateDepartmentBudget();
     }
   }
 };
