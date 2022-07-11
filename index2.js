@@ -360,6 +360,7 @@ const deleteEmployee = async (db) => {
     type: "list",
     name: "employee",
     message: "Which employee would you like to delete?: ",
+    choices: employeeList,
   });
   const sql = `DELETE FROM employees WHERE id=?`;
   for (i = 0; i < employeeList.length; i++) {
@@ -368,7 +369,8 @@ const deleteEmployee = async (db) => {
     }
   }
   const params = [employeeID];
-  db.query(sql, params)
+  let query = db
+    .query(sql, params)
     .then(([rows]) => {
       console.log(
         `\n${employeeToDelete.employee} was deleted from the employees database`
