@@ -29,10 +29,10 @@ const mainMenu = async () => {
       "Add a Department",
       "Add a Role",
       "Add an Employee",
-      "#Delete a Department",
-      "#Delete a Role",
-      "#Delete an Employee",
-      "#Update an Employee Role",
+      "Delete a Department",
+      "Delete a Role",
+      "Delete an Employee",
+      "Update an Employee Role",
       "#Update an Employees Manager",
       "#View Department Budget",
       "Quit",
@@ -252,6 +252,136 @@ const addAnEmployee = async (db) => {
   return query;
 };
 
+const updateRole = async (db) => {
+  const roleList = await generateRoleList(db);
+  const employeeList = await generateEmployeeList(db);
+  const updateInfo = await inquirer.prompt([
+    {
+      type: "list",
+      name: "employee",
+      message: "Which employee are you updating?: ",
+      choices: employeeList,
+    },
+    {
+      type: "list",
+      name: "role",
+      message: "What is this employee's new role?: ",
+      choices: roleList,
+    },
+  ]);
+  const sql = `UPDATE employees SET role_id=? WHERE id=?`;
+  for (i = 0; i < employeeList.length; i++) {
+    if (updateInfo.employee === employeeList[i]) {
+      var employeeID = i + 1;
+    }
+  }
+  for (i = 0; i < roleList.length; i++) {
+    if (updateInfo.role === roleList[i]) {
+      var roleID = i + 1;
+    }
+  }
+  const params = [roleID, employeeID];
+  let query = db
+    .query(sql, params)
+    .then(([rows]) => {
+      console.log("\n" + "Employee Role Updated" + "\n");
+    })
+    .catch((err) => {
+      if (err) {
+        console.error(err);
+      }
+    });
+  return query;
+};
+
+const deleteDepartment = async (db) => {
+  const departmentList = await generateDepartmentList(db);
+  const deleteDepartment = await inquirer.prompt({
+    type: "list",
+    name: "department",
+    message: "Which department would you like to delete?: ",
+    choices: departmentList,
+  });
+  const sql = `DELETE FROM departments WHERE id=?`;
+  for (i = 0; i < departmentList.length; i++) {
+    if (deleteDepartment.department === departmentList[i]) {
+      var departmentIndex = i + 1;
+    }
+  }
+  const params = [departmentIndex];
+  let query = db
+    .query(sql, params)
+    .then(([rows]) => {
+      console.log(
+        `\n${deleteDepartment.department} was deleted from the Departments database.\n`
+      );
+    })
+    .catch((err) => {
+      if (err) {
+        console.error(err);
+      }
+    });
+  return query;
+};
+
+const deleteRole = async (db) => {
+  const roleList = await generateRoleList(db);
+  const roleToDelete = await inquirer.prompt({
+    type: "list",
+    name: "role",
+    message: "Which role would you like to delete?: ",
+    choices: roleList,
+  });
+  const sql = `DELETE FROM roles WHERE id=?`;
+  for (i = 0; i < roleList.length; i++) {
+    if (roleToDelete.role === roleList[i]) {
+      var roleID = i + 1;
+    }
+  }
+  const params = [roleID];
+  let query = db
+    .query(sql, params)
+    .then(([rows]) => {
+      console.log(
+        `\n${roleToDelete.role} was removed from the roles database\n`
+      );
+    })
+    .catch((err) => {
+      if (err) {
+        console.error(err);
+      }
+    });
+  return query;
+};
+
+const deleteEmployee = async (db) => {
+  const employeeList = await generateEmployeeList(db);
+  const employeeToDelete = await inquirer.prompt({
+    type: "list",
+    name: "employee",
+    message: "Which employee would you like to delete?: ",
+  });
+  const sql = `DELETE FROM employees WHERE id=?`;
+  for (i = 0; i < employeeList.length; i++) {
+    if (employeeToDelete.employee === employeeList[i]) {
+      var employeeID = i + 1;
+    }
+  }
+  const params = [employeeID];
+  db.query(sql, params)
+    .then(([rows]) => {
+      console.log(
+        `\n${employeeToDelete.employee} was deleted from the employees database`
+      );
+    })
+    .catch((err) => {
+      if (err) {
+        console.error(err);
+      }
+    });
+  return query;
+};
+
 const quit = () => {
   console.log("Goodbye");
   process.exit();
@@ -281,6 +411,12 @@ const init = async () => {
       await addAnEmployee(db);
     } else if (initialChoice === "Update an Employee Role") {
       await updateRole(db);
+    } else if (initialChoice === "Delete a Department") {
+      await deleteDepartment(db);
+    } else if (initialChoice === "Delete a Role") {
+      await deleteRole(db);
+    } else if (initialChoice === "Delete an Employee") {
+      await deleteEmployee(db);
     }
   }
 };
